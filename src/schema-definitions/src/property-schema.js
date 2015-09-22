@@ -3,6 +3,8 @@
  * A library for describing, manipulating and querying property schemas
  */
 
+var Predicate=require("predicate");
+
 (function(){
 
    var TypeValidators={
