@@ -66,7 +66,7 @@ var Predicate=require("predicate");
          // process the predicate
          if(("predicate" in propertyDefinition))
          {
-            Predicate.getProperties()
+            // Predicate.getProperties()
          }
       }
    };
