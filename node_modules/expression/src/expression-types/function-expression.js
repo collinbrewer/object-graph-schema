@@ -131,11 +131,7 @@
       return "function";
    };
 
-   // expose
-   (function(mod, name){
-      (typeof(module)!=="undefined" ? (module.exports=mod) : ((typeof(define)!=="undefined" && define.amd) ? define(function(){ return mod; }) : (window[name]=mod)));
-
-      root[name]=mod;
-   })(FunctionExpression, "FunctionExpression");
+   // export
+   (typeof(module)!=="undefined" ? (module.exports=FunctionExpression) : ((typeof(define)!=="undefined" && define.amd) ? define(function(){ return FunctionExpression; }) : (window.FunctionExpression=FunctionExpression)));
 
 })();
