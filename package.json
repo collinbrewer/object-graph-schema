@@ -1,6 +1,6 @@
 {
   "name": "object-graph-schema",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A set of definitions for *Schema* to work with data in an Object Graph.",
   "main": "index.js",
   "scripts": {
