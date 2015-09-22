@@ -1,4 +1,4 @@
-var ObjectGraph=require("./src/object-graph.js");
+var ObjectGraph=require("./src/schema-definitions/index.js");
 
 // expose
 (function(mod, name){
