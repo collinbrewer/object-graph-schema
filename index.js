@@ -1,3 +1,8 @@
+global.Schema=require("schema");
+global.Expression=require("expression");
+global.Predicate=require("predicate");
+global.Descriptor=require("descriptor");
+
 var ObjectGraph=require("./src/schema-definitions/index.js");
 
 // expose
