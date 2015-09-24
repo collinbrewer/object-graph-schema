@@ -37,11 +37,34 @@ describe("Querying", function(){
       "entities" : [
          {
             "schemaType" : "entity",
-            "name" : "Todo",
+            "name" : "Person",
             "properties" : [
                {
                   "schemaType" : "property",
-                  "name" : "title",
+                  "name" : "name",
+                  "type" : "string"
+
+               },
+               {
+                  "schemaType" : "property",
+                  "name" : "employer",
+                  "type" : "relationship",
+                  "entityName" : "Business"
+               },
+               {
+                  "name" : "employerName",
+                  "type" : "fetched",
+                  "valueExpression" : "employer.name"
+               }
+            ]
+         },
+         {
+            "schemaType" : "entity",
+            "name" : "Business",
+            "properties" : [
+               {
+                  "schemaType" : "property",
+                  "name" : "name",
                   "type" : "string"
 
                }
@@ -56,6 +79,31 @@ describe("Querying", function(){
 
       var entities=schema.getEntities();
 
-      entities.should.have.length(1);
+      entities.should.have.length(2);
+   });
+
+   it("should return the entity of a property", function(){
+
+      var personEntity=schema.getEntitiesByName()["Person"];
+      var employerProperty=personEntity.getPropertiesByName()["employer"];
+
+      employerProperty.getEntity().should.equal(personEntity);
+   });
+
+   it("should return the object graph of an entity", function(){
+
+      var personEntity=schema.getEntitiesByName()["Person"];
+
+      personEntity.getObjectGraph().should.equal(schema);
+   });
+
+   it("should return the destination entity of a property", function(){
+
+      var entitiesByName=schema.getEntitiesByName();
+      var personEntity=entitiesByName["Person"];
+      var businessEntity=entitiesByName["Business"];
+      var employerProperty=personEntity.getPropertiesByName()["employer"];
+
+      employerProperty.getDestinationEntity().should.equal(businessEntity);
    });
 });

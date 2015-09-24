@@ -22,7 +22,7 @@ var EntitySchema=require("../src/entity-schema.js");
       for(var i=0, l=entityDefinitions.length; i<l; i++)
       {
          entityDefinition=entityDefinitions[i];
-         entity=new EntitySchema(entityDefinition);
+         entity=new EntitySchema(entityDefinition, o);
 
          // index by type and name
          entitiesByName[entityDefinition.name]=entity;

@@ -74,9 +74,10 @@ var Predicate=require("predicate");
    /**
     * PropertyDescription
     */
-   function PropertySchema(definition)
+   function PropertySchema(definition, entity)
    {
       this.definition=definition;
+      this.entity=entity;
 
       index(this, definition);
    }
@@ -86,6 +87,13 @@ var Predicate=require("predicate");
     */
    PropertySchema.prototype.getDefinition = function () {
       return this.definition;
+   };
+
+   /**
+    * Returns the parent entity the property belongs to.
+    */
+   PropertySchema.prototype.getEntity = function () {
+      return this.entity;
    };
 
    /**
@@ -139,6 +147,17 @@ var Predicate=require("predicate");
    PropertySchema.prototype.isToMany = function () {
       var definition=this.definition;
       return (("toMany" in definition) ? definition.toMany : false);
+   };
+
+   /**
+    * Returns the destination entity for a relationship.
+    */
+   PropertySchema.prototype.getDestinationEntity = function () {
+      var definition=this.definition;
+      var entity=this.getEntity();
+      var objectGraph=entity.getObjectGraph();
+
+      return objectGraph.getEntitiesByName()[definition.entityName];
    };
 
    /**

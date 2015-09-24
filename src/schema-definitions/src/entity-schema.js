@@ -149,7 +149,7 @@ var PropertySchema=require("../src/property-schema.js");
 
       for(var i=0, l=propertyDefinitions.length; i<l; i++)
       {
-         property=new PropertySchema(propertyDefinitions[i]);
+         property=new PropertySchema(propertyDefinitions[i], o);
          properties.push(property);
          type=property.getType();
          name=property.getName();
@@ -182,9 +182,10 @@ var PropertySchema=require("../src/property-schema.js");
    /**
     * EntitySchema
     */
-   function EntitySchema(definition)
+   function EntitySchema(definition, objectGraph)
    {
       this.definition=definition;
+      this.objectGraph=objectGraph;
 
       // NOTE: this was meant to be done on the fly for the sake of memory, but for now, it's done upfront
       index(this, this.definition.properties);
@@ -195,6 +196,13 @@ var PropertySchema=require("../src/property-schema.js");
     */
    EntitySchema.prototype.getDefinition = function () {
       return this.definition;
+   };
+
+   /**
+    * Returns the object graph the receiver belongs to.
+    */
+   EntitySchema.prototype.getObjectGraph = function () {
+      return this.objectGraph;
    };
 
    /**
