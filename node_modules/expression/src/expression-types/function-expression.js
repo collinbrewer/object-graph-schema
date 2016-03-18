@@ -87,14 +87,14 @@
       func=target[func];
 
       // convert arguments to expressions and evaluate them
-      var arguments=[];
+      var expressions=[];
 
       for(var i=0, l=args.length; i<l; i++)
       {
-         arguments.push(Expression.parse(args[i]).getValueWithObject(o, getter));
+         expressions.push(Expression.parse(args[i]).getValueWithObject(o, getter));
       }
 
-      return func.apply(target, arguments); // return func(a.getValueWithObject(o, getter), b.getValueWithObject(o, getter));
+      return func.apply(target, expressions); // return func(a.getValueWithObject(o, getter), b.getValueWithObject(o, getter));
    };
 
    FunctionExpression.prototype.getDependentKeyPaths=function(){
