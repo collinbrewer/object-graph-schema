@@ -1,72 +1,68 @@
 /**
- * ObjectGraphSchema.js
- * A library for describing, manipulating and querying entity schemas
- */
+* ObjectGraphSchema.js
+* A library for describing, manipulating and querying entity schemas
+*/
 
 var EntitySchema=require("../src/entity-schema.js");
 
-(function(){
+var index=function(o, entityDefinitions){
 
-   var index=function(o, entityDefinitions){
+   var entitiesByName={};
+   var entities=[];
 
-      var entitiesByName={};
-      var entities=[];
-
-      var index={
-         "entitiesByName": entitiesByName,
-         "entities" : entities
-      };
-
-      var entity;
-
-      for(var i=0, l=entityDefinitions.length; i<l; i++)
-      {
-         entityDefinition=entityDefinitions[i];
-         entity=new EntitySchema(entityDefinition, o);
-
-         // index by type and name
-         entitiesByName[entityDefinition.name]=entity;
-
-         entities.push(entity);
-      }
-
-      o.index=index;
+   var index={
+      "entitiesByName": entitiesByName,
+      "entities" : entities
    };
 
-   /**
-    * ObjectGraphSchema
-    */
-   function ObjectGraphSchema(definition)
-   {
-      this.definition=definition;
+   var entity;
 
-      index(this, definition.entities);
+   for(var i=0, l=entityDefinitions.length; i<l; i++)
+   {
+      entityDefinition=entityDefinitions[i];
+      entity=new EntitySchema(entityDefinition, o);
+
+      // index by type and name
+      entitiesByName[entityDefinition.name]=entity;
+
+      entities.push(entity);
    }
 
-   ObjectGraphSchema.prototype.getName = function () {
-      return this.definition.name;
-   };
+   o.index=index;
+};
 
-   ObjectGraphSchema.prototype.getEntities = function (){
-      return this.index.entities;
-   };
+/**
+ * ObjectGraphSchema
+ */
+function ObjectGraphSchema(definition)
+{
+   this.definition=definition;
 
-   ObjectGraphSchema.prototype.getEntitiesByName = function () {
-      return this.index.entitiesByName;
-   };
+   index(this, definition.entities);
+}
 
-   // ObjectGraphSchema.prototype.getRelationshipsWithDestinationEntity=function(entity){
-   //
-   //    var entityName=typeof(entity)==="string" ? entity : entity.getName();
-   //
-   //    if(!this.relationshipsWithDestinationEntity[entityName])
-   //    {
-   //       this.relationshipsWithDestinationEntity[entityName]=this.properties.filter(function(property){ return property.getEntity().getName()===entityName; });
-   //    }
-   //
-   //    return this.relationshipsWithDestinationEntity[entityName];
-   // };
+ObjectGraphSchema.prototype.getName = function () {
+   return this.definition.name;
+};
 
-   // export
-   (typeof(module)!=="undefined" ? (module.exports=ObjectGraphSchema) : ((typeof(define)!=="undefined" && define.amd) ? define(function(){ return ObjectGraphSchema; }) : (window.ObjectGraphSchema=ObjectGraphSchema)));
-})();
+ObjectGraphSchema.prototype.getEntities = function (){
+   return this.index.entities;
+};
+
+ObjectGraphSchema.prototype.getEntitiesByName = function () {
+   return this.index.entitiesByName;
+};
+
+// ObjectGraphSchema.prototype.getRelationshipsWithDestinationEntity=function(entity){
+//
+//    var entityName=typeof(entity)==="string" ? entity : entity.getName();
+//
+//    if(!this.relationshipsWithDestinationEntity[entityName])
+//    {
+//       this.relationshipsWithDestinationEntity[entityName]=this.properties.filter(function(property){ return property.getEntity().getName()===entityName; });
+//    }
+//
+//    return this.relationshipsWithDestinationEntity[entityName];
+// };
+
+module.exports=ObjectGraphSchema;
