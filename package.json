@@ -4,7 +4,8 @@
   "description": "A set of definitions for *Schema* to work with data in an Object Graph.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha spec"
+    "test": "mocha spec",
+    "test:dev": "mocha spec --watch"
   },
   "repository": {
     "type": "git",
