@@ -72,7 +72,7 @@ describe("Querying", function(){
       schema.getCheckerName().should.equal("hasTitle");
    });
 
-   it("should return the fetcher name: ", function(){
+   it("should return the fetcher name", function(){
       schema.getFetcherName().should.equal("fetchTitle");
    });
 
