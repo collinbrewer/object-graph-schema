@@ -3,7 +3,7 @@
  * A library for describing, manipulating and querying property schemas
  */
 
-var Predicate=require("predicate");
+var Predicate=require("@collinbrewer/predicate");
 
 (function(){
 
