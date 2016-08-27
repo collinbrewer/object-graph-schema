@@ -3,295 +3,271 @@
  * A library for describing, manipulating and querying property schemas
  */
 
-var Predicate=require("@collinbrewer/predicate");
+var TypeValidators = {
+	'string': function (value) { return typeof (value) === 'string'; },
+	'number': function (value) { return typeof (value) === 'number' && !isNaN(value); },
+	'boolean': function (value) { return typeof (value) === 'boolean'; },
+	'date': function (value) { return typeof (value) === 'object' && !!value && value.constructor.name === 'Date'; }
+};
 
-(function(){
+var Typecasters = {
+	'string': function (value) { return '' + value; },
+	'number': function (value) { return +value; },
+	'boolean': function (value) { return !!value; },
+	'date': function (value) { return Date.parse(value); }
+};
 
-   var TypeValidators={
-      "string"  : function(value){ return typeof(value)==='string'; },
-      "number"  : function(value){ return typeof(value)==='number' && !isNaN(value); },
-      "boolean" : function(value){ return typeof(value)==='boolean'; },
-      "date"    : function(value){ return typeof(value)==='object' && !!value && value.constructor.name==='Date'; }
-   };
+// TODO: we should rely on our custom expression for getting this value
+var getFirstDependentKeyFromKeyPath = function (keyPath) {
+	var keyPathComponents = keyPath.split('.');
+	var keyPathComponent;
+	var dependentKey = null;
 
-   var Typecasters={
-      "string"  : function(value){ return ''+value; },
-      "number"  : function(value){ return +value; },
-      "boolean" : function(value){ return !!value; },
-      "date"    : function(value){ return Date.parse(value); }
-   };
+	while ((keyPathComponent = keyPathComponents.shift())) {
+		if (keyPathComponent.charAt(0) !== '@') {
+			dependentKey = keyPathComponent;
+			break;
+		}
+	}
 
-   // TODO: we should rely on our custom expression for getting this value
-   var getFirstDependentKeyFromKeyPath=function(keyPath){
+	return dependentKey;
+};
 
-      var keyPathComponents=keyPath.split("."),
-          keyPathComponent,
-          dependentKey=null;
+var index = function (o, propertyDefinition) {
+	var affectedBy = {};
 
-      while((keyPathComponent=keyPathComponents.shift()))
-      {
-         if(keyPathComponent.charAt(0)!=="@")
-         {
-            dependentKey=keyPathComponent;
-            break;
-         }
-      }
+	var index = {
+		'affectedBy': affectedBy
+	};
 
-      return dependentKey;
-   };
+	var type = propertyDefinition.type;
 
-   var index=function(o, propertyDefinition){
+	// cases:
+	// fullName = firstName + lastName
+	// children = All Person objects whose "parent" is SOURCE
+	if (type === 'fetched' || ('valueExpression' in propertyDefinition)) {
+		// process the expression
+		if (('valueExpression' in propertyDefinition)) {
+			var dependentKey = getFirstDependentKeyFromKeyPath(propertyDefinition.valueExpression);
 
-      var affectedBy={};
+			affectedBy[dependentKey];
+		}
 
-      var index={
-         "affectedBy" : affectedBy
-      };
+		// process the predicate
+		if (('predicate' in propertyDefinition)) {
+			// Predicate.getProperties()
+		}
+	}
+};
 
-      var type=propertyDefinition.type;
+/**
+ * PropertyDescription
+ */
+function PropertySchema (definition, entity) {
+	this.definition = definition;
+	this.entity = entity;
 
-      // cases:
-      // fullName = firstName + lastName
-      // children = All Person objects whose "parent" is SOURCE
-      if(type==="fetched" || ("valueExpression" in propertyDefinition))
-      {
-         // process the expression
-         if(("valueExpression" in propertyDefinition))
-         {
-            var dependentKey=getFirstDependentKeyFromKeyPath(propertyDefinition.valueExpression);
+	index(this, definition);
+}
 
-            affectedBy[dependentKey];
-         }
+/**
+ * Returns the definition used to create the schema.
+ */
+PropertySchema.prototype.getDefinition = function () {
+	return this.definition;
+};
 
-         // process the predicate
-         if(("predicate" in propertyDefinition))
-         {
-            // Predicate.getProperties()
-         }
-      }
-   };
+/**
+ * Returns the parent entity the property belongs to.
+ */
+PropertySchema.prototype.getEntity = function () {
+	return this.entity;
+};
 
-   /**
-    * PropertyDescription
-    */
-   function PropertySchema(definition, entity)
-   {
-      this.definition=definition;
-      this.entity=entity;
+/**
+ * Returns the name of the property
+ */
+PropertySchema.prototype.getName = function () {
+	return this.definition.name;
+};
 
-      index(this, definition);
-   }
+/**
+ * Returns the type of the property
+ */
+PropertySchema.prototype.getType = function () {
+	var type = this.definition.type;
 
-   /**
-    * Returns the definition used to create the schema.
-    */
-   PropertySchema.prototype.getDefinition = function () {
-      return this.definition;
-   };
+	// if it's not a relationship or fetched property, it's an attribute
+	// NOTE: Probably need to separate this out into different classes
+	type !== 'relationship' && type !== 'fetched' && (type = 'attribute');
 
-   /**
-    * Returns the parent entity the property belongs to.
-    */
-   PropertySchema.prototype.getEntity = function () {
-      return this.entity;
-   };
+	return type;
+};
 
-   /**
-    * Returns the name of the property
-    */
-   PropertySchema.prototype.getName = function () {
-      return this.definition.name;
-   };
+/**
+ * Used to retreive the type of an attribute property.
+ * @return {string} An attribute type.  string|number|boolean|date
+ */
+PropertySchema.prototype.getAttributeType = function () {
+	return (this.getType() === 'attribute' ? this.definition.type : undefined);
+};
 
-   /**
-    * Returns the type of the property
-    */
-   PropertySchema.prototype.getType = function () {
-      var type=this.definition.type;
+/**
+ * Used to determine if the property is required.
+ */
+PropertySchema.prototype.isRequired = function () {
+	var definition = this.definition;
+	return ('required' in definition) && definition.required === true;
+};
 
-      // if it's not a relationship or fetched property, it's an attribute
-      // NOTE: Probably need to separate this out into different classes
-      type!=="relationship" && type!=="fetched" && (type="attribute");
+/**
+ * Used to determine if the property is transient.
+ */
+PropertySchema.prototype.isTransient = function () {
+	var type = this.getType();
+	return (type === 'fetched' || type === 'transient');
+};
 
-      return type;
-   };
+/**
+ * Returns true if the property is a to many relationship
+ * @return {Boolean} Relationship is a to many relationship
+ */
+PropertySchema.prototype.isToMany = function () {
+	var definition = this.definition;
+	return (('toMany' in definition) ? definition.toMany : false);
+};
 
-   /**
-    * Used to retreive the type of an attribute property.
-    * @return {string} An attribute type.  string|number|boolean|date
-    */
-   PropertySchema.prototype.getAttributeType = function () {
-      return (this.getType()==="attribute" ? this.definition.type : undefined);
-   };
+/**
+ * Returns the destination entity for a relationship.
+ */
+PropertySchema.prototype.getDestinationEntity = function () {
+	var definition = this.definition;
+	var entity = this.getEntity();
+	var objectGraph = entity.getObjectGraph();
 
-   /**
-    * Used to determine if the property is required.
-    */
-   PropertySchema.prototype.isRequired = function () {
-      var definition=this.definition;
-      return ("required" in definition) && definition.required===true;
-   };
+	return objectGraph.getEntitiesByName()[definition.entityName];
+};
 
-   /**
-    * Used to determine if the property is transient.
-    */
-   PropertySchema.prototype.isTransient = function () {
-      var type=this.getType();
-      return (type==="fetched" || type==="transient");
-   };
+/**
+ * Returns the delete rule for a relationship property.
+ * @return {string} The delete rule for the property
+ */
+PropertySchema.prototype.getDeleteRule = function () {
+	return this.definition.deleteRule || null;
+};
 
-   /**
-    * Returns true if the property is a to many relationship
-    * @return {Boolean} Relationship is a to many relationship
-    */
-   PropertySchema.prototype.isToMany = function () {
-      var definition=this.definition;
-      return (("toMany" in definition) ? definition.toMany : false);
-   };
+/**
+ * Returns the destination entity name for a relationship property
+ * @return {String} The destination entity of the relationship.
+ */
+PropertySchema.prototype.getEntityName = function () {
+	return this.definition.entityName;
+};
 
-   /**
-    * Returns the destination entity for a relationship.
-    */
-   PropertySchema.prototype.getDestinationEntity = function () {
-      var definition=this.definition;
-      var entity=this.getEntity();
-      var objectGraph=entity.getObjectGraph();
+/**
+ * Returns the permissions for the property.
+ */
+PropertySchema.prototype.getPermission = function () {
+	return (this.definition.permission || 'readwrite');
+};
 
-      return objectGraph.getEntitiesByName()[definition.entityName];
-   };
+/**
+ * Returns the name of the instance variable used to store the property.
+ * @return {string} The name of the instance variable.
+ */
+PropertySchema.prototype.getIvar = function () {
+	var definition = this.definition;
 
-   /**
-    * Returns the delete rule for a relationship property.
-    * @return {string} The delete rule for the property
-    */
-   PropertySchema.prototype.getDeleteRule = function () {
-      return this.definition.deleteRule || null;
-   };
+	return (('ivar' in definition) ? definition.ivar : definition.name);
+};
 
-   /**
-    * Returns the destination entity name for a relationship property
-    * @return {String} The destination entity of the relationship.
-    */
-   PropertySchema.prototype.getEntityName = function () {
-      return this.definition.entityName;
-   };
+/**
+ * Returns the name of the setter method for the property
+ */
+PropertySchema.prototype.getSetterName = function () {
+	var setterName;
+	var definition = this.definition;
 
-   /**
-    * Returns the permissions for the property.
-    */
-   PropertySchema.prototype.getPermission = function () {
-      return (this.definition.permission || "readwrite");
-   };
+	if (!definition.permission || (definition.permission && definition.permission === 'readwrite')) {
+		setterName = definition.setter;
 
-   /**
-    * Returns the name of the instance variable used to store the property.
-    * @return {string} The name of the instance variable.
-    */
-   PropertySchema.prototype.getIvar = function () {
-      var definition=this.definition;
+		if (!setterName) {
+			var name = definition.name;
+			var Name = (name.substr(0, 1).toUpperCase() + name.substr(1));
 
-      return (("ivar" in definition) ? definition.ivar : definition.name);
-   };
+			setterName = ('set' + Name);
+		}
+	}
 
-   /**
-    * Returns the name of the setter method for the property
-    */
-   PropertySchema.prototype.getSetterName = function () {
+	return setterName;
+};
 
-      var setterName;
-      var definition=this.definition;
+/**
+ * Returns the name of the getter method for the property
+ */
+PropertySchema.prototype.getGetterName = function () {
+	var getterName;
+	var definition = this.definition;
 
-      if(!definition.permission || (definition.permission && definition.permission==="readwrite"))
-      {
-         setterName=definition.setter;
+	getterName = definition.getter;
 
-         if(!setterName)
-         {
-            var name=definition.name;
-            var Name=(name.substr(0, 1).toUpperCase() + name.substr(1));
+	if (!getterName) {
+		var name = definition.name;
+		var Name = (name.substr(0, 1).toUpperCase() + name.substr(1));
 
-            setterName=("set" + Name);
-         }
-      }
+		getterName = ('get' + Name);
+	}
 
-      return setterName;
-   };
+	return getterName;
+};
 
-   /**
-    * Returns the name of the getter method for the property
-    */
-   PropertySchema.prototype.getGetterName = function () {
+/**
+ * Returns the name of the checker method for the property
+ */
+PropertySchema.prototype.getCheckerName = function () {
+	var checkerName;
+	var definition = this.definition;
 
-      var getterName;
-      var definition=this.definition;
+	checkerName = definition.checker;
 
-      getterName=definition.getter;
+	if (!checkerName) {
+		var name = definition.name;
+		var Name = (name.substr(0, 1).toUpperCase() + name.substr(1));
 
-      if(!getterName)
-      {
-         var name=definition.name;
-         var Name=(name.substr(0, 1).toUpperCase() + name.substr(1));
+		checkerName = ('has' + Name);
+	}
 
-         getterName=("get" + Name);
-      }
+	return checkerName;
+};
 
-      return getterName;
-   };
+/**
+ * Returns the name of the fetcher method for the property
+ */
+PropertySchema.prototype.getFetcherName = function () {
+	var fetcherName;
+	var definition = this.definition;
 
-   /**
-    * Returns the name of the checker method for the property
-    */
-   PropertySchema.prototype.getCheckerName = function () {
+	fetcherName = definition.fetcher;
 
-      var checkerName;
-      var definition=this.definition;
+	if (!fetcherName) {
+		var name = definition.name;
+		var Name = (name.substr(0, 1).toUpperCase() + name.substr(1));
 
-      checkerName=definition.checker;
+		fetcherName = ('fetch' + Name);
+	}
 
-      if(!checkerName)
-      {
-         var name=definition.name;
-         var Name=(name.substr(0, 1).toUpperCase() + name.substr(1));
+	return fetcherName;
+};
 
-         checkerName=("has" + Name);
-      }
+/**
+ * Returns a list of property definitions whose values are dependent on the value of the receiver
+ */
+PropertySchema.prototype.getAffectedProperties = function (affectingProperty) {
+	// this.index.affects
 
-      return checkerName;
-   };
+	return this.getProperties().filter(function (property) {
+		return property.isAffectedBy(affectingProperty); // is dependent on
+	});
+};
 
-   /**
-    * Returns the name of the fetcher method for the property
-    */
-   PropertySchema.prototype.getFetcherName = function () {
-
-      var fetcherName;
-      var definition=this.definition;
-
-      fetcherName=definition.fetcher;
-
-      if(!fetcherName)
-      {
-         var name=definition.name;
-         var Name=(name.substr(0, 1).toUpperCase() + name.substr(1));
-
-         fetcherName=("fetch" + Name);
-      }
-
-      return fetcherName;
-   };
-
-   /**
-    * Returns a list of property definitions whose values are dependent on the value of the receiver
-    */
-   PropertySchema.prototype.getAffectedProperties=function(affectingProperty){
-
-      // this.index.affects
-
-      return this.getProperties().filter(function(property){
-         return property.isAffectedBy(affectingProperty); // is dependent on
-      });
-   };
-
-   // export
-   (typeof(module)!=="undefined" ? (module.exports=PropertySchema) : ((typeof(define)!=="undefined" && define.amd) ? define(function(){ return PropertySchema; }) : (window.PropertySchema=PropertySchema)));
-})();
+module.exports = PropertySchema;

@@ -1,14 +1,12 @@
 /**
  *
  */
-Descriptor.register("object-graph", "entityName", function(objectGraph, entityName){
-
-   return objectGraph[entityName];
+Descriptor.register('object-graph', 'entityName', function (objectGraph, entityName) {
+	return objectGraph[entityName];
 });
 
-Descriptor.register("comparator", "predicate", function(node, predicate){
-
-   return Predicate.parse(predicate).evaluateWithObject(node);
+Descriptor.register('comparator', 'predicate', function (node, predicate) {
+	return Predicate.parse(predicate).evaluateWithObject(node);
 });
 
 // Descriptor can't differentiate between objects on it's own, so directives
@@ -20,12 +18,12 @@ Descriptor.register("comparator", "predicate", function(node, predicate){
 //  "object-graph-filter",
 //  function(descriptor){
 //
-//     return function(doc){
-//        return Synth.generate("array-filter", doc[descriptor.entityName]);
-//     };
+//	  return function(doc){
+//		  return Synth.generate("array-filter", doc[descriptor.entityName]);
+//	  };
 //  }
 // );
 // Synth.registerResolver("object-graph-filter", function(doc){
 //
-//    return typeof(doc)==="object" && doc.
+//	 return typeof(doc)==="object" && doc.
 // });

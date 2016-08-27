@@ -1,125 +1,117 @@
-var should=require("chai").should();
+var should = require('chai').should();
 
-var EntitySchema=require("../src/schema-definitions/src/entity-schema.js");
+var EntitySchema = require('../src/schema-definitions/src/entity-schema.js');
 
-describe("Constructor", function(){
+describe('EntitySchema', function () {
+	context('#constructor', function () {
+		it('should create a new entity schema', function () {
+			var definition = {
+				'schemaType': 'entity',
+				'name': 'Todo',
+				'properties': [
+					{
+						'schemaType': 'property',
+						'name': 'title',
+						'type': 'string'
 
-   it("should create a new entity schema", function(){
+					}
+				]
+			};
 
-      var definition={
-         "schemaType" : "entity",
-         "name" : "Todo",
-         "properties" : [
-            {
-               "schemaType" : "property",
-               "name" : "title",
-               "type" : "string"
+			var schema = new EntitySchema(definition);
 
-            }
-         ]
-      };
+			should.exist(schema);
+		});
+	});
 
-      var schema=new EntitySchema(definition);
+	context('Querying', function () {
+		var definition = {
+			'schemaType': 'entity',
+			'name': 'Person',
+			'className': 'PersonObject',
+			'properties': [
+				{
+					'schemaType': 'property',
+					'name': 'firstName',
+					'type': 'string',
+					'required': true
+				},
+				{
+					'schemaType': 'property',
+					'name': 'lastName',
+					'type': 'string'
+				},
+				{
+					'schemaType': 'property',
+					'name': 'employer',
+					'type': 'relationship',
+					'entityName': 'Business'
+				},
+				{
+					'name': 'employerName',
+					'type': 'fetched',
+					'valueExpression': 'employer.name'
+				}
+			]
+		};
 
-      should.exist(schema);
-   });
-});
+		var schema = new EntitySchema(definition);
 
+		it('should return the name of the entity', function () {
+			schema.getName().should.equal('Person');
+		});
 
-describe("Querying", function(){
+		it('should return the class name of the entity', function () {
+			schema.getClassName().should.equal('PersonObject');
+		});
 
-   var definition={
-      "schemaType" : "entity",
-      "name" : "Person",
-      "className" : "PersonObject",
-      "properties" : [
-         {
-            "schemaType" : "property",
-            "name" : "firstName",
-            "type" : "string",
-            "required" : true
-         },
-         {
-            "schemaType" : "property",
-            "name" : "lastName",
-            "type" : "string"
-         },
-         {
-            "schemaType" : "property",
-            "name" : "employer",
-            "type" : "relationship",
-            "entityName" : "Business"
-         },
-         {
-            "name" : "employerName",
-            "type" : "fetched",
-            "valueExpression" : "employer.name"
-         }
-      ]
-   };
+		it('should return attribute properties', function () {
+			var properties = schema.getAttributesByName();
 
-   var schema=new EntitySchema(definition);
+			properties.should.have.property('firstName');
+		});
 
-   it("should return the name of the entity", function(){
-      schema.getName().should.equal("Person");
-   });
+		it('should return relationship properties', function () {
+			var properties = schema.getRelationshipsByName();
 
-   it("should return the class name of the entity", function(){
-      schema.getClassName().should.equal("PersonObject");
-   });
+			properties.should.have.property('employer');
+		});
 
-   it("should return attribute properties", function(){
+		it('should return fetched properties', function () {
+			var properties = schema.getFetchedByName();
 
-      var properties=schema.getAttributesByName();
+			properties.should.have.property('employerName');
+		});
 
-      properties.should.have.property("firstName");
-   });
+		it('should return required properties', function () {
+			var properties = schema.getRequiredByName();
 
-   it("should return relationship properties", function(){
+			properties.should.have.property('firstName');
+		});
 
-      var properties=schema.getRelationshipsByName();
+		it('should return transient properties', function () {
+			var properties = schema.getTransientByName();
 
-      properties.should.have.property("employer");
-   });
+			properties.should.have.property('employerName');
+		});
 
-   it("should return fetched properties", function(){
+		it('should return a property by name', function () {
+			schema.getPropertyWithName('firstName').should.have.property('getName');
+		});
 
-      var properties=schema.getFetchedByName();
-
-      properties.should.have.property("employerName");
-   });
-
-   it("should return required properties", function(){
-
-      var properties=schema.getRequiredByName();
-
-      properties.should.have.property("firstName");
-   });
-
-   it("should return transient properties", function(){
-
-      var properties=schema.getTransientByName();
-
-      properties.should.have.property("employerName");
-   });
-
-   it("should return a property by name", function(){
-
-      schema.getPropertyWithName("firstName").should.have.property("getName");
-   });
-
-   // it("should return affected properties", function(){
-   //
-   //    var properties=schema.getPropertiesAffecting("fullName")
-   //
-   //    properties.should.have.property("firstName");
-   //    properties.should.have.property("lastName");
-   // });
-   //
-   // it("should return affected properties", function(){
-   //
-   //    var properties=schema.getPropertiesAffectedBy("firstName")
-   //
-   //    properties.should.have.property("lastName");
-   // });
+		// it("should return affected properties", function(){
+		//
+		//	 var properties=schema.getPropertiesAffecting("fullName")
+		//
+		//	 properties.should.have.property("firstName");
+		//	 properties.should.have.property("lastName");
+		// });
+		//
+		// it("should return affected properties", function(){
+		//
+		//	 var properties=schema.getPropertiesAffectedBy("firstName")
+		//
+		//	 properties.should.have.property("lastName");
+		// });
+	});
 });
