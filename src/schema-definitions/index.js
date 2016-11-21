@@ -4,9 +4,9 @@
 
 // dependencies
 var Schema = require('schema');
-var PropertySchema = require('./src/property-schema.js');
-var EntitySchema = require('./src/entity-schema.js');
-var ObjectGraphSchema = require('./src/object-graph-schema.js');
+var PropertySchema = require('./property-schema.js');
+var EntitySchema = require('./entity-schema.js');
+var ObjectGraphSchema = require('./object-graph-schema.js');
 
 // register defaults
 Schema.register('property', PropertySchema);

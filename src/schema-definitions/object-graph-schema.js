@@ -3,29 +3,20 @@
 * A library for describing, manipulating and querying entity schemas
 */
 
-var EntitySchema = require('../src/entity-schema.js');
+var EntitySchema = require('./entity-schema.js');
 
 var index = function (o, entityDefinitions) {
 	var entitiesByName = {};
-	var entities = [];
-
+	var entity;
 	var index = {
 		'entitiesByName': entitiesByName,
-		'entities': entities
+		'entities': entityDefinitions.map((entityDefinition) => {
+			entity = new EntitySchema(entityDefinition, o);
+			entitiesByName[entityDefinition.name] = entity;
+
+			return entity;
+		})
 	};
-
-	var entity;
-	var entityDefinition;
-
-	for (var i = 0, l = entityDefinitions.length; i < l; i++) {
-		entityDefinition = entityDefinitions[i];
-		entity = new EntitySchema(entityDefinition, o);
-
-		// index by type and name
-		entitiesByName[entityDefinition.name] = entity;
-
-		entities.push(entity);
-	}
 
 	o.index = index;
 };
@@ -39,16 +30,32 @@ function ObjectGraphSchema (definition) {
 	index(this, definition.entities);
 }
 
-ObjectGraphSchema.prototype.getName = function () {
-	return this.definition.name;
-};
-
 ObjectGraphSchema.prototype.getEntities = function () {
 	return this.index.entities;
 };
 
 ObjectGraphSchema.prototype.getEntitiesByName = function () {
 	return this.index.entitiesByName;
+};
+
+ObjectGraphSchema.prototype.getEntity = function (entityName) {
+	return this.index.entitiesByName[entityName];
+};
+
+ObjectGraphSchema.prototype.getProperties = function () {
+	var properties = this.properties;
+
+	if (!properties) {
+		properties = [];
+
+		this.getEntities().forEach((entity) => {
+			properties = properties.concat(entity.getProperties());
+		});
+
+		this.properties = properties;
+	}
+
+	return properties;
 };
 
 // ObjectGraphSchema.prototype.getRelationshipsWithDestinationEntity=function(entity){

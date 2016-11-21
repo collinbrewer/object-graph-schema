@@ -8,22 +8,76 @@ Object Graph Schema is a set of definitions for `Schema` for working with object
 Usage
 -----
 
-```js
-import {ObjectGraphSchema} from 'object-graph-schema'
+### Definitions
 
-let schema=new ObjectGraphSchema(...);
+#### Object Graph
+```js
+let objectGraphSchema = new ObjectGraphSchema({
+	entities: [...]
+});
+```
+#### Entity
+```js
+{
+	schemaType: 'entity',
+	name: 'Person',
+	properties: [...]
+}
 ```
 
-### Entity Relationships
+#### Property
+
+Basic property definitions are simple
 ```js
-personEntity.getAffectingEntities(); // [Business]
-businessEntity.getAffectedEntities(); // [Person]
-personEntity.isAffectedBy(businessEntity); // true
-businessEntity.affects(personEntity); // true
+{
+	schemaType: 'property',
+	name: 'firstName',
+	type: 'string'
+}
+```
+
+Computed properties
+```js
+{
+	type: 'computed',
+	name: 'numberOfChildren'
+	descriptor: {
+		valueExpression: '@sum(children)'
+	}
+}
+```
+
+### Querying
+
+#### Object Graph
+```js
+objectGraphSchema.getEntities();
+objectGraphSchema.getEntity('Person');
+```
+
+#### Entities
+```js
+companySchema.getProperties();
+companySchema.getProperty('employees');
+```
+
+#### Properties
+```js
+firstNameSchema.getType();
+firstNameSchema.getAffectedProperties(); // [fullNameSchema]
+firstNameSchema.getAffectingProperties(); // []
+```
+
+### Entity Associations
+```js
+personEntity.getAffectingEntities(); // [CompanySchema]
+businessEntity.getAffectedEntities(); // [PersonSchema]
+personEntity.isAffectedByEntity(businessEntity); // true
+businessEntity.affectsEntity(personEntity); // true
 ```
 
 
-### Property Relationships
+### Property Associations
 ```js
 fullNameProperty.getAffectingProperties(); // [firstName, lastName]
 firstNameProperty.getAffectedProperties(); // [fullName]

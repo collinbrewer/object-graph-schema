@@ -4,9 +4,9 @@
   "description": "A set of definitions for *Schema* to work with data in an Object Graph.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha spec",
-    "test:watch": "mocha spec --watch",
-    "test:cov": "istanbul cover --report lcov --report json --report text --report html _mocha -- spec",
+    "test": "mocha \"src/**/*.test.js\" --compilers js:babel-register",
+    "test:watch": "npm run test -- --watch",
+    "test:cov": "babel-node ./node_modules/.bin/isparta cover node_modules/mocha/bin/_mocha -- \"src/**/*.test.js\"",
     "pretest:codeclimate": "npm run test:cov",
     "test:codeclimate": "codeclimate-test-reporter < ./coverage/lcov.info"
   },
@@ -17,12 +17,18 @@
   "author": "Collin Brewer <collin@brewer-collective.com>",
   "license": "MIT",
   "dependencies": {
+    "@collinbrewer/descriptor": "^0.3.2",
     "@collinbrewer/expression": "^0.1.1",
     "@collinbrewer/predicate": "^0.1.2",
-    "descriptor": "github:collinbrewer/descriptor",
+    "clone": "^2.0.0",
+    "json-pointer": "github:collinbrewer/json-pointer",
     "schema": "github:collinbrewer/schema"
   },
   "devDependencies": {
+    "babel-cli": "^6.16.0",
+    "babel-core": "^6.17.0",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-stage-0": "^6.5.0",
     "chai": "^3.0.0",
     "codeclimate-test-reporter": "^0.3.3",
     "eslint": "^2.13.1",

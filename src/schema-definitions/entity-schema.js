@@ -3,7 +3,20 @@
  * A library for describing, manipulating and querying entity schemas
  */
 
-var PropertySchema = require('../src/property-schema.js');
+var PropertySchema = require('./property-schema.js');
+
+function indexAssociations (objectGraphSchema) {
+	var associations = {};
+
+	// prepare a spaces for entity associations
+	objectGraphSchema.getEntities().forEach((entitySchema) => {
+		associations[entitySchema.getName()] = {
+			properties
+		};
+	});
+
+	return associations;
+}
 
 function _indexRelations () {
 	// prepare a space for everything
@@ -12,9 +25,13 @@ function _indexRelations () {
 	var l;
 	var e;
 	var m;
+	var j;
+	var ps;
+	var p;
+	var c;
 
 	for (i = 0, es = m.entities, l = es.length; i < l; i++) {
-		e = es[i]
+		e = es[i];
 		m._entitiesByName[e.name] = e;
 
 		e._propertiesByName = {};
@@ -93,31 +110,31 @@ function _indexRelations () {
 	}
 };
 
-var indexRelations = function (o, propertyDefinitions) {
-	var index = {
-
-	};
-
-	var propertyDefinition;
-	var name;
-	var p;
-	var j;
-	var c;
-	var ps;
-
-	for (j = 0, ps = propertyDefinitions, c = ps.length, p; j < c; j++) {
-		p = ps[j];
-		propertyDefinition = propertyDefinitions[j];
-		name = propertyDefinition.name;
-
-		index[name] = {
-			affectedBy: {},
-			affecting: {}
-		};
-
-		// if()
-	}
-};
+// var indexRelations = function (o, propertyDefinitions) {
+// 	var index = {
+//
+// 	};
+//
+// 	var propertyDefinition;
+// 	var name;
+// 	var p;
+// 	var j;
+// 	var c;
+// 	var ps;
+//
+// 	for (j = 0, ps = propertyDefinitions, c = ps.length, p; j < c; j++) {
+// 		p = ps[j];
+// 		propertyDefinition = propertyDefinitions[j];
+// 		name = propertyDefinition.name;
+//
+// 		index[name] = {
+// 			affectedBy: {},
+// 			affecting: {}
+// 		};
+//
+// 		// if()
+// 	}
+// };
 
 var index = function (o, propertyDefinitions) {
 	propertyDefinitions || (propertyDefinitions = []);
@@ -264,7 +281,9 @@ EntitySchema.prototype.getPropertiesByName = function () {
 /**
  * Used to get a property of the entity by name.
  */
-EntitySchema.prototype.getPropertyWithName = function (name) {
+EntitySchema.prototype.getProperty = function (name) {
+	console.assert(name in this.index.all, 'No "' + name + '" property found');
+
 	return this.index.all[name];
 };
 
@@ -303,25 +322,48 @@ EntitySchema.prototype.getProperties = function () {
 //	 _affectedEntities: a dictionary of all entities & that are affected by the change of the property
 
 // e1.p1 affects e2.p2
-function _addAffectedProperty (e1, p1, e2, p2) {
-	var m = this.model;
+// function _addAffectedProperty (e1, p1, e2, p2) {
+// 	var m = this.model;
+//
+// 	if (!m._entitiesByName[e1]._propertiesByName[p1]._affectedEntities[e2]) {
+// 		m._entitiesByName[e1]._propertiesByName[p1]._affectedEntities[e2] = [];
+// 	}
+//
+// 	m._entitiesByName[e1]._propertiesByName[p1]._affectedEntities[e2].push(p2); // my property is affected by you're property
+// }
 
-	if (!m._entitiesByName[e1]._propertiesByName[p1]._affectedEntities[e2]) {
-		m._entitiesByName[e1]._propertiesByName[p1]._affectedEntities[e2] = [];
-	}
+// employerNameProperty.isDependentOn(companyNameProperty);
+// companyNameProperty.isDependentOf(employerNameProperty);
 
-	m._entitiesByName[e1]._propertiesByName[p1]._affectedEntities[e2].push(p2); // my property is affected by you're property
-}
+EntitySchema.prototype.isAffectedByEntity = function (entity) {
+	typeof entity === 'string' || (entity = entity.getName());
+	return this.getAffectedProperties().map((property) => {
+		return property.getEntity().getName();
+	}).indexOf(entity) !== -1;
+};
 
-EntitySchema.prototype.getPropertiesAffecting = function (affectedProperty) {
+EntitySchema.prototype.affectsEntity = function (entity) {
+	typeof entity === 'string' && (entity = this.getObjectGraph().getEntity(entity));
+	return entity.isAffectedByEntity(this);
+};
+
+EntitySchema.prototype.isAffectedByProperty = function (property) {
+	return (this.getAffectingProperties().indexOf(property) !== -1);
+};
+
+EntitySchema.prototype.affectsProperty = function (property) {
+	return (this.getAffectedProperties().indexOf(property) !== -1);
+};
+
+EntitySchema.prototype.getAffectingProperties = function (affectedProperty) {
 	return this.getProperties().filter(function (property) {
 		return property.affects(affectedProperty);
 	});
 };
 
-EntitySchema.prototype.getPropertiesAffectedBy = function (affectingProperty) {
+EntitySchema.prototype.getAffectedProperties = function (affectingProperty) {
 	return this.getProperties().filter(function (property) {
-		return property.isAffectedBy(affectingProperty); // is dependent on
+		return property.isAffectedByProperty(affectingProperty); // is dependent on
 	});
 };
 
