@@ -17,9 +17,9 @@
   "author": "Collin Brewer <collin@brewer-collective.com>",
   "license": "MIT",
   "dependencies": {
-    "@collinbrewer/expression": "^0.1.1",
-    "@collinbrewer/predicate": "^0.1.2",
-    "descriptor": "github:collinbrewer/descriptor",
+    "@collinbrewer/descriptor": "^0.3.2",
+    "@collinbrewer/expression": "^0.4.1",
+    "@collinbrewer/predicate": "^0.1.4",
     "schema": "github:collinbrewer/schema"
   },
   "devDependencies": {
