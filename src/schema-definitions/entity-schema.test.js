@@ -1,6 +1,6 @@
 var should = require('chai').should();
 
-var EntitySchema = require('../src/schema-definitions/src/entity-schema.js');
+var EntitySchema = require('./entity-schema.js');
 
 describe('EntitySchema', function () {
 	context('#constructor', function () {

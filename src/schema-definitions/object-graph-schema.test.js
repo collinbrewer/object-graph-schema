@@ -1,6 +1,7 @@
 var should = require('chai').should();
+const { expect } = require('chai');
 
-var ObjectGraphSchema = require('../src/schema-definitions/src/object-graph-schema.js');
+var ObjectGraphSchema = require('./object-graph-schema.js');
 
 describe('ObjectGraphSchema', function () {
 	context('#constructor', function () {
@@ -99,6 +100,72 @@ describe('ObjectGraphSchema', function () {
 			var employerProperty = personEntity.getPropertiesByName()['employer'];
 
 			employerProperty.getDestinationEntity().should.equal(businessEntity);
+		});
+	});
+
+	context('Indexing', () => {
+		const objectGraph = new ObjectGraphSchema({
+			'schemaType': 'object-graph',
+			'entities': [
+				{
+					'schemaType': 'entity',
+					'name': 'Person',
+					'properties': [
+						{
+							'schemaType': 'property',
+							'name': 'firstName',
+							'type': 'string'
+						},
+						{
+							schemaType: 'property',
+							name: 'parent',
+							type: 'relationship',
+							entityName: 'Person'
+						},
+						{
+							schemaType: 'property',
+							name: 'children',
+							entityName: 'Person',
+							predicate: 'parent == $FETCH_SOURCE'
+						},
+						{
+							schemaType: 'property',
+							name: 'numberOfChildren',
+							valueExpression: '@sum.children'
+						}
+					]
+				},
+				{
+					schemaType: 'entity',
+					name: 'Business',
+					properties: [
+						{
+							schemaType: 'property',
+							name: 'nameOfCEO',
+							valueExpression: 'ceo.firstName'
+						},
+						{
+							schemaType: 'property',
+							type: 'fetched',
+							name: 'employeesWithChildren',
+							entityName: 'Person',
+							predicate: 'employer == $FETCH_SOURCE && numberOfChildren > 0'
+						}
+					]
+				}
+			]
+		});
+
+		it('should index all relationships', () => {
+			const index = objectGraph.getIndex();
+			const personIndex = index.entitiesByName.Person.index;
+			const businessIndex = index.entitiesByName.Business.index;
+
+			expect(personIndex.propertiesByName.firstName.index.affectedBy).to.deep.equal({ SELF: {} });
+			expect(personIndex.propertiesByName.children.index.affectedBy).to.deep.equal({ Person: { parent: true } });
+			expect(personIndex.propertiesByName.numberOfChildren.index.affectedBy).to.deep.equal({ SELF: { children: true } });
+			expect(businessIndex.propertiesByName.nameOfCEO.index.affectedBy).to.deep.equal({ SELF: { ceo: true } });
+			expect(businessIndex.propertiesByName.employeesWithChildren.index.affectedBy).to.deep.equal({ Person: { employer: true, numberOfChildren: true } });
 		});
 	});
 });

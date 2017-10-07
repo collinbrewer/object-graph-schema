@@ -1,6 +1,6 @@
 var should = require('chai').should();
 
-var PropertySchema = require('../src/schema-definitions/src/property-schema.js');
+var PropertySchema = require('./property-schema.js');
 
 describe('PropertySchema', function () {
 	context('#constructor', function () {
@@ -48,9 +48,14 @@ describe('PropertySchema', function () {
 		});
 
 		it('should return the delete rule for a property', function () {
-			var definition = {'name': 'friend', 'type': 'relationship', 'entityName': 'Person', 'deleteRule': 'cascade'};
+			const definition = {
+				'name': 'friend',
+				'type': 'relationship',
+				'entityName': 'Person',
+				'deleteRule': 'cascade'
+			};
 
-			var schema = new PropertySchema(definition);
+			const schema = new PropertySchema(definition);
 			schema.getDeleteRule().should.equal('cascade');
 		});
 
