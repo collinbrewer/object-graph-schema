@@ -2,16 +2,16 @@
  * PropertySchema.js
  * A library for describing, manipulating and querying property schemas
  */
-var Predicate = require('@collinbrewer/predicate');
+const Predicate = require('@collinbrewer/predicate');
 
-var TypeValidators = {
+const TypeValidators = {
 	'string': function (value) { return typeof (value) === 'string'; },
 	'number': function (value) { return typeof (value) === 'number' && !isNaN(value); },
 	'boolean': function (value) { return typeof (value) === 'boolean'; },
-	'date': function (value) { return typeof (value) === 'object' && !!value && value.varructor.name === 'Date'; }
+	'date': function (value) { return typeof (value) === 'object' && !!value && value.constructor.name === 'Date'; }
 };
 
-var Typecasters = {
+const Typecasters = {
 	'string': function (value) { return '' + value; },
 	'number': function (value) { return +value; },
 	'boolean': function (value) { return !!value; },
@@ -19,10 +19,10 @@ var Typecasters = {
 };
 
 // TODO: we should rely on our custom expression for getting this value
-var getFirstDependentKeyFromKeyPath = (keyPath) => {
-	var keyPathComponents = keyPath.split('.');
-	var keyPathComponent;
-	var dependentKey = null;
+const getFirstDependentKeyFromKeyPath = (keyPath) => {
+	const keyPathComponents = keyPath.split('.');
+	let keyPathComponent;
+	let dependentKey = null;
 
 	while ((keyPathComponent = keyPathComponents.shift())) {
 		if (keyPathComponent.charAt(0) !== '@') {
@@ -38,26 +38,26 @@ var getFirstDependentKeyFromKeyPath = (keyPath) => {
  * builds an index of the relationships between entities and properties
  * propertyName: { affectedBy: { entityName: { propertyName: true } } }
  */
-var index = (o, propertyDefinition) => {
-	var { valueExpression, predicate, entityName = 'SELF' } = propertyDefinition;
-	var affectedBy = {};
-	var index = { affectedBy };
-	var affectedByEntity;
+const index = (o, propertyDefinition) => {
+	const { valueExpression, predicate, entityName = 'SELF' } = propertyDefinition;
+	const affectedBy = {};
+	const index = { affectedBy };
+	let affectedByEntity;
 
 	if (entityName) {
 		affectedByEntity = (affectedBy[entityName] = {});
 	}
 
 	if (valueExpression) {
-		var dependentKey = getFirstDependentKeyFromKeyPath(valueExpression);
+		const dependentKey = getFirstDependentKeyFromKeyPath(valueExpression);
 
 		affectedByEntity[dependentKey] = true;
 	}
 
 	// process the predicate
 	if (predicate) {
-		var pred = Predicate.parse(predicate);
-		var keyPathExpressions = pred.getDependentKeyPathExpressions();
+		const pred = Predicate.parse(predicate);
+		const keyPathExpressions = pred.getDependentKeyPathExpressions();
 
 		keyPathExpressions.forEach(keyPathExpression => (
 			affectedByEntity[keyPathExpression.getKeyPath()] = true
@@ -107,7 +107,7 @@ class PropertySchema {
 	 * Returns the type of the property
 	 */
 	getType () {
-		var type = this.definition.type;
+		let type = this.definition.type;
 
 		// if it's not a relationship or fetched property, it's an attribute
 		// NOTE: Probably need to separate this out into different classes
@@ -128,7 +128,7 @@ class PropertySchema {
 	 * Used to determine if the property is required.
 	 */
 	isRequired () {
-		var definition = this.definition;
+		const definition = this.definition;
 		return ('required' in definition) && definition.required === true;
 	}
 
@@ -136,7 +136,7 @@ class PropertySchema {
 	 * Used to determine if the property is transient.
 	 */
 	isTransient () {
-		var type = this.getType();
+		const type = this.getType();
 		return (type === 'fetched' || type === 'transient');
 	}
 
@@ -145,7 +145,7 @@ class PropertySchema {
 	 * @return {Boolean} Relationship is a to many relationship
 	 */
 	isToMany () {
-		var definition = this.definition;
+		const definition = this.definition;
 		return (('toMany' in definition) ? definition.toMany : false);
 	}
 
@@ -153,19 +153,19 @@ class PropertySchema {
 	 * Returns the destination entity for a relationship.
 	 */
 	getDestinationEntity () {
-		var definition = this.definition;
-		var entity = this.getEntity();
-		var objectGraph = entity.getObjectGraph();
+		const definition = this.definition;
+		const entity = this.getEntity();
+		const objectGraph = entity.getObjectGraph();
 
 		return objectGraph.getEntitiesByName()[definition.entityName];
 	}
 
 	/**
-	 * Returns the devare rule for a relationship property.
-	 * @return {string} The devare rule for the property
+	 * Returns the delete rule for a relationship property.
+	 * @return {string} The delete rule for the property
 	 */
-	getDevareRule () {
-		return this.definition.devareRule || null;
+	getDeleteRule () {
+		return this.definition.deleteRule || null;
 	}
 
 	/**
@@ -184,11 +184,11 @@ class PropertySchema {
 	}
 
 	/**
-	 * Returns the name of the instance variable used to store the property.
-	 * @return {string} The name of the instance variable.
+	 * Returns the name of the instance constiable used to store the property.
+	 * @return {string} The name of the instance constiable.
 	 */
 	getIvar () {
-		var definition = this.definition;
+		const definition = this.definition;
 
 		return (('ivar' in definition) ? definition.ivar : definition.name);
 	}
@@ -197,15 +197,15 @@ class PropertySchema {
 	 * Returns the name of the setter method for the property
 	 */
 	getSetterName () {
-		var definition = this.definition;
-		var setterName;
+		const definition = this.definition;
+		let setterName;
 
 		if (!definition.permission || (definition.permission && definition.permission === 'readwrite')) {
 			setterName = definition.setter;
 
 			if (!setterName) {
-				var name = definition.name;
-				var Name = (name.substr(0, 1).toUpperCase() + name.substr(1));
+				const name = definition.name;
+				const Name = (name.substr(0, 1).toUpperCase() + name.substr(1));
 
 				setterName = ('set' + Name);
 			}
@@ -218,14 +218,14 @@ class PropertySchema {
 	 * Returns the name of the getter method for the property
 	 */
 	getGetterName () {
-		var definition = this.definition;
-		var getterName;
+		const definition = this.definition;
+		let getterName;
 
 		getterName = definition.getter;
 
 		if (!getterName) {
-			var name = definition.name;
-			var Name = (name.substr(0, 1).toUpperCase() + name.substr(1));
+			const name = definition.name;
+			const Name = (name.substr(0, 1).toUpperCase() + name.substr(1));
 
 			getterName = ('get' + Name);
 		}
@@ -237,14 +237,14 @@ class PropertySchema {
 	 * Returns the name of the checker method for the property
 	 */
 	getCheckerName () {
-		var definition = this.definition;
-		var checkerName;
+		const definition = this.definition;
+		let checkerName;
 
 		checkerName = definition.checker;
 
 		if (!checkerName) {
-			var name = definition.name;
-			var Name = (name.substr(0, 1).toUpperCase() + name.substr(1));
+			const name = definition.name;
+			const Name = (name.substr(0, 1).toUpperCase() + name.substr(1));
 
 			checkerName = ('has' + Name);
 		}
@@ -256,14 +256,14 @@ class PropertySchema {
 	 * Returns the name of the fetcher method for the property
 	 */
 	getFetcherName () {
-		var definition = this.definition;
-		var fetcherName;
+		const definition = this.definition;
+		let fetcherName;
 
 		fetcherName = definition.fetcher;
 
 		if (!fetcherName) {
-			var name = definition.name;
-			var Name = (name.substr(0, 1).toUpperCase() + name.substr(1));
+			const name = definition.name;
+			const Name = (name.substr(0, 1).toUpperCase() + name.substr(1));
 
 			fetcherName = ('fetch' + Name);
 		}
@@ -275,6 +275,8 @@ class PropertySchema {
 	 * Returns a list of property definitions whose values are dependent on the value of the receiver
 	 */
 	getAffectedProperties (affectingProperty) {
+		// this.index.affects
+
 		return this.getProperties().filter(function (property) {
 			return property.isAffectedBy(affectingProperty); // is dependent on
 		});
