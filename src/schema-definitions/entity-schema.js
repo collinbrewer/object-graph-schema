@@ -128,9 +128,9 @@ var index = (o, propertyDefinitions) => {
 	// var included = {};
 	var required = {};
 	var transient = {};
-	const propertiesByName = {};
+	var propertiesByName = {};
 	var properties = [];
-	const affectedBy = {};
+	var affectedBy = {};
 
 	var index = {
 		'attribute': attributes,
@@ -170,9 +170,9 @@ var index = (o, propertyDefinitions) => {
 	}
 
 	properties.forEach(property => {
-		const propertyAffectedBy = property.index.affectedBy;
+		var propertyAffectedBy = property.index.affectedBy;
 
-		for (let entityName in propertyAffectedBy) {
+		for (var entityName in propertyAffectedBy) {
 			affectedBy[entityName] = true;
 		}
 	});

@@ -3,19 +3,19 @@
 * A library for describing, manipulating and querying entity schemas
 */
 
-const EntitySchema = require('./entity-schema.js');
+var EntitySchema = require('./entity-schema.js');
 
-const index = (o, entityDefinitions) => {
-	const entitiesByName = {};
-	const entities = [];
+var index = (o, entityDefinitions) => {
+	var entitiesByName = {};
+	var entities = [];
 
-	const index = {
+	var index = {
 		'entitiesByName': entitiesByName,
 		'entities': entities
 	};
 
-	let entity;
-	let entityDefinition;
+	var entity;
+	var entityDefinition;
 
 	for (var i = 0, l = entityDefinitions.length; i < l; i++) {
 		entityDefinition = entityDefinitions[i];
