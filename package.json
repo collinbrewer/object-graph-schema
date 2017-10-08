@@ -2,8 +2,9 @@
   "name": "object-graph-schema",
   "version": "0.0.10",
   "description": "A set of definitions for *Schema* to work with data in an Object Graph.",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
+    "build": "babel --source-map inline -d lib/ src/",
     "test": "mocha src/**/*.test.js",
     "test:watch": "npm run test -- --watch",
     "test:cov": "istanbul cover --report lcov --report json --report text --report html _mocha -- spec",
@@ -23,6 +24,8 @@
     "schema": "github:collinbrewer/schema"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
     "chai": "^3.0.0",
     "codeclimate-test-reporter": "^0.3.3",
     "eslint": "^2.13.1",

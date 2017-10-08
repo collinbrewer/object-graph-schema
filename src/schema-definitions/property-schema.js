@@ -60,7 +60,7 @@ var index = function (o, propertyDefinition) {
 		var keyPathExpressions = pred.getDependentKeyPathExpressions();
 
 		keyPathExpressions.forEach(function (keyPathExpression) {
-			return affectedByEntity[keyPathExpression.getKeyPath()] = true
+			return affectedByEntity[keyPathExpression.getKeyPath()] = true;
 		});
 	}
 
