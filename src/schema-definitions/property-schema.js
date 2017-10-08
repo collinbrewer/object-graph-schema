@@ -19,7 +19,7 @@ var Typecasters = {
 };
 
 // TODO: we should rely on our custom expression for getting this value
-var getFirstDependentKeyFromKeyPath = (keyPath) => {
+var getFirstDependentKeyFromKeyPath = function (keyPath) {
 	var keyPathComponents = keyPath.split('.');
 	var keyPathComponent;
 	var dependentKey = null;
@@ -38,7 +38,7 @@ var getFirstDependentKeyFromKeyPath = (keyPath) => {
  * builds an index of the relationships between entities and properties
  * propertyName: { affectedBy: { entityName: { propertyName: true } } }
  */
-var index = (o, propertyDefinition) => {
+var index = function (o, propertyDefinition) {
 	var { valueExpression, predicate, entityName = 'SELF' } = propertyDefinition;
 	var affectedBy = {};
 	var index = { affectedBy };
@@ -59,9 +59,9 @@ var index = (o, propertyDefinition) => {
 		var pred = Predicate.parse(predicate);
 		var keyPathExpressions = pred.getDependentKeyPathExpressions();
 
-		keyPathExpressions.forEach(keyPathExpression => (
-			affectedByEntity[keyPathExpression.getKeyPath()] = true
-		));
+		keyPathExpressions.forEach(function (keyPathExpression) {
+			return affectedByEntity[keyPathExpression.getKeyPath()] = true
+		});
 	}
 
 	o.index = index;

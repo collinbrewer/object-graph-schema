@@ -27,7 +27,7 @@ function _indexRelations () {
 		}
 	}
 
-	var filterDuplicates = (el, i, a) => {
+	var filterDuplicates = function (el, i, a) {
 		return (i === a.indexOf(el));
 	};
 
@@ -93,7 +93,7 @@ function _indexRelations () {
 	}
 };
 
-var indexRelations = (o, propertyDefinitions) => {
+var indexRelations = function (o, propertyDefinitions) {
 	var index = {
 
 	};
@@ -119,7 +119,7 @@ var indexRelations = (o, propertyDefinitions) => {
 	}
 };
 
-var index = (o, propertyDefinitions) => {
+var index = function (o, propertyDefinitions) {
 	propertyDefinitions || (propertyDefinitions = []);
 
 	var attributes = {};
@@ -169,7 +169,7 @@ var index = (o, propertyDefinitions) => {
 		propertiesByName[name] = property;
 	}
 
-	properties.forEach(property => {
+	properties.forEach(function (property) {
 		var propertyAffectedBy = property.index.affectedBy;
 
 		for (var entityName in propertyAffectedBy) {

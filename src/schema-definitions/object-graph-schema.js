@@ -5,7 +5,7 @@
 
 var EntitySchema = require('./entity-schema.js');
 
-var index = (o, entityDefinitions) => {
+var index = function (o, entityDefinitions) {
 	var entitiesByName = {};
 	var entities = [];
 
